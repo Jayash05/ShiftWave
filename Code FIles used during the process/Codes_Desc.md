@@ -3,6 +3,23 @@
 This document provides a detailed breakdown of the script files, experimental iterations, and expected console/interface outputs contained within the Shiftwave repository.
 
 ---
+# Shiftwave: Architecture & File Guide
+
+This document provides a detailed breakdown of the script files, experimental iterations, expected console/interface outputs, and instructions for running the primary Streamlit application (`sol.py`) contained within the Shiftwave repository.
+
+---
+Remaining Every Other code provided are the trials I have gone throughout o get to sol.py.
+
+## 🌟 Primary Application: `sol.py`
+
+`sol.py` serves as the core flagship program for Shiftwave. It bridges the mathematical QUBO energy landscape with an interactive web interface built using **Streamlit**, enabling real-time management of workforce parameters.
+
+### How to Run the Streamlit App
+To launch the interactive dashboard locally:
+
+1. Ensure you have Streamlit, D-Wave Ocean SDK, and Pandas installed in your environment:
+   ```bash
+   pip install streamlit dwave-neal pandas numpy pulp scikit-learn
 
 ## 📂 Repository File Structure & Descriptions
 
