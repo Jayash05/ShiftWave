@@ -108,7 +108,16 @@ Validated against a Classical Integer Linear Programming (ILP) solver using PuLP
 ## 🚧 Limitations & Future Work
 
 * **Hardware Access:** Simulated annealing on CPU instances (e.g., Google Colab) necessitated extreme Macro-Qubit compression (up to 35 agents per qubit), which occasionally inflated costs due to block-allocations. Deploying the uncompressed 3D matrix directly onto physical QPU hardware (like the D-Wave Advantage) will eliminate the need for compression and prevent local energy minima traps.
-* **Dynamic Proficiency Degradation:** The current Erlang C calculations assume static agent proficiency across an 8-hour shift. Future iterations will introduce a time-decay variable to the Hamiltonian to mathematically account for human fatigue. 
+* **Dynamic Proficiency Degradation:** The current Erlang C calculations assume static agent proficiency across an 8-hour shift. Future iterations will introduce a time-decay variable to the Hamiltonian to mathematically account for human fatigue.
+
+## ⚙️ Setup & Installation
+
+To run the Shiftwave pipeline locally, ensure you have Python 3.10+ installed. 
+
+1. Clone the repository:
+   ```bash
+   git clone [https://github.com/yourusername/Shiftwave.git](https://github.com/yourusername/Shiftwave.git)
+   cd Shiftwave
 
 ---
-*Built as a research initiative in advanced Artificial Intelligence, Data Science, and Hybrid-Quantum Optimization.*
+*Built as a research experience in Quantum Computing Optimization without actually running on Quantum Computers.*
