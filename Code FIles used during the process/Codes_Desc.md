@@ -42,10 +42,9 @@ To launch the interactive dashboard locally:
     ==================================================
      🖥️ CLASSICAL SOLVER RESULTS ([Solver Status])
     ==================================================
-    Execution Time    : [Time] seconds
-    Total Agents      : [Count]
-    Total Labor Cost  : $[Cost]
-    Off-Preference    : [Count] agents
+    Execution Time    : [113.84] seconds
+    Total Agents      : [98.7]
+    Total Labor Cost  : $[1,032,365]
     ==================================================
     ```
 
