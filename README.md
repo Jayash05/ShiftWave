@@ -116,8 +116,8 @@ To run the Shiftwave pipeline locally, ensure you have Python 3.10+ installed.
 
 1. Clone the repository:
    ```bash
-   git clone [https://github.com/Jayash05/Shiftwave.git](https://github.com/Jayash05/Shiftwave.git)
+   git clone [https://github.com/Jayash05/Shiftwave.git]
    cd Shiftwave
-
+remaining all required libraries can be downloaded based on the imports used in the codes.
 ---
 *Built as a research experience in Quantum Computing Optimization without actually running on Quantum Computers.*
