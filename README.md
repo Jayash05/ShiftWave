@@ -116,7 +116,7 @@ To run the Shiftwave pipeline locally, ensure you have Python 3.10+ installed.
 
 1. Clone the repository:
    ```bash
-   git clone [https://github.com/yourusername/Shiftwave.git](https://github.com/yourusername/Shiftwave.git)
+   git clone [https://github.com/Jayash05/Shiftwave.git](https://github.com/Jayash05/Shiftwave.git)
    cd Shiftwave
 
 ---
