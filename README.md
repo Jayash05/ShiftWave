@@ -121,3 +121,6 @@ To run the Shiftwave pipeline locally, ensure you have Python 3.10+ installed.
 remaining all required libraries can be downloaded based on the imports used in the codes.
 ---
 *Built as a research experience in Quantum Computing Optimization without actually running on Quantum Computers.*
+
+For going through the presentation & Demonstration:
+https://youtu.be/Pk8d0lwLRHA
