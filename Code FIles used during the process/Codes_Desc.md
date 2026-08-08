@@ -61,52 +61,38 @@ To launch the interactive dashboard locally:
     [PIPELINE COMPLETE] Unpacking Agents...
     [DIAGNOSTIC] Running Discrete Event Simulation on Quantum Schedule...
 
-    ===========================================================================
-     📊 VANGUARD ENTERPRISE SCORECARD (DUAL-ENGINE EVALUATION)
-    ===========================================================================
-    --- MACRO METRICS (ERLANG C) ---
-    Execution Time (sec)           | [Time]
-    Total Agents Deployed          | [Count]
-    Projected Payroll              | $[Cost]
-    Service Level (SLA %)          | [SLA]%
-    Avg Speed of Answer            | [ASA] s
-    Queue Abandonment Rate         | [Abandon]%
-
-    --- MICRO METRICS (EVENT SIMULATOR) ---
-    Avg Idle Time Between Calls    | [Idle] mins
-    Agents Who Took ZERO Calls     | [Count]
-    Max Calls Taken by One Agent   | [Count]
-    ===========================================================================
-
-    🚨 EXTREME OVERWORK (Top 3 Busiest Agents):
-    [DataFrame Table of Busiest Agents]
-
-    💤 EXTREME IDLE TIME (Top 3 Least Busy Agents):
-    [DataFrame Table of Idle Agents]
+    ---- MACRO METRICS (ERLANG C) ---
+      Execution Time (sec)           | 7.0005              
+      Total Agents Deployed          | 4657                
+      Projected Payroll              | $939,693.87         
+      Service Level (SLA %)          | 90.9               %
+      Avg Speed of Answer            | 36.2               s
+      Queue Abandonment Rate         | 22.71              %
+      
+      --- MICRO METRICS (EVENT SIMULATOR) ---
+      Avg Idle Time Between Calls    | 19.6               mins
+      Agents Who Took ZERO Calls     | 0                   
+      Max Calls Taken by One Agent   | 29                  
+      ===========================================================================
+      
+      🚨 EXTREME OVERWORK (Top 3 Busiest Agents):
+       Agent_ID   Shift  Calls_Taken  Avg_Idle_Between_Calls_Mins
+      AGT_07212 Evening           29                     0.289425
+      AGT_05165 Evening           28                     0.299226
+      AGT_09266  Midday           28                     3.174286
+      
+      💤 EXTREME IDLE TIME (Top 3 Least Busy Agents):
+       Agent_ID   Shift  Calls_Taken  Avg_Idle_Between_Calls_Mins
+      AGT_04687 Evening            8                    26.598333
+      AGT_03487 Evening            8                    27.939167
+      AGT_02643 Evening            8                    23.815208-- MACRO METRICS (ERLANG C) ---
+              
     ```
 
 ### 3. `sol.py`
 *   **Description:** An evolution of the optimization dashboard featuring refined base shift preference logic, dynamic micro-shift costing, and an integrated Streamlit app[cite: 3]. It features Manager Controls via interactive sliders to dynamically adjust SLA priority, cost efficiency, and employee preference weights on the QUBO energy landscape[cite: 3].
 *   **Expected Output (Streamlit UI Interface):**
-    ```text
-     Quantum Multi-Model Workforce Planner
-    Dynamic Bipartite Matching via D-Wave Simulated Annealing
-
-    --- [Sidebar Controls] ---
-    Manager Controls (SLA Priority, Cost Efficiency Priority, Employee Preference Priority)
-    [Button: 🚀 Run Quantum Optimization]
-
-    --- [Main Screen Scorecards (Upon Execution)] ---
-    Projected Payroll     | Service Level (SLA)      | Avg Speed of Answer     | Off-Preference Shifts
-    $[Cost] (- vs Class)  | [SLA]% (- vs Class)      | [ASA] s                 | [Count]
-
-    --- [Interval Staffing Planner Table] ---
-    Time Interval | Erlang C Target | Quantum Scheduled | Variance
-    [15-min rows color-coded by understaffed vs optimal status]
-
-    --- [Trade-off Analysis Box] ---
-    [Dynamic status info regarding current energy valley and cost-vs-service trade-offs]
-    ```
+    
 
 ### 4. `trial3.py`
 *   **Description:** Executes a direct head-to-head evaluation between the Classical LP (PuLP) solver and the True Quantum Simulator[cite: 4]. It utilizes a Constrained Quadratic Model (CQM) flattened to a BQM, heavily compressing the matrix by grouping 12 agents per squad to scale enterprise data efficiently[cite: 4].
@@ -120,19 +106,16 @@ To launch the interactive dashboard locally:
     [QUANTUM] Running D-Wave Simulated Annealer (neal)...
     [QUANTUM] Unpacking Macro-Qubits to Individual Agents...
 
-    ===========================================================================
-     📊 VANGUARD ENTERPRISE SCORECARD (CLASSICAL VS. QUANTUM-INSPIRED)
-    ===========================================================================
     Operational Metric        | Classical ILP (PuLP)   | Quantum-Inspired
     ---------------------------------------------------------------------------
-    Execution Time (sec)      | [Time]                 | [Time]
-    Total Agents Deployed     | [Count]                | [Count]
-    Projected Payroll         | $[Cost]                | $[Cost]
-    Routing Mismatches        | [Count]                | [Count]
-    Off-Preference Shifts     | [Count]                | [Count]
-    Service Level (SLA %)     | [SLA]%                 | [SLA]%
-    Avg Speed of Answer       | [ASA] s                | [ASA] s
-    Queue Abandonment Rate    | [Abandon]%             | [Abandon]%
+    Execution Time (sec)      | [113]                 | [39]
+    Total Agents Deployed     | [6069]                | [23164]
+    Projected Payroll         | $[1032365]                | $[4379476]
+    Routing Mismatches        | [1202]                | [7904]
+    Off-Preference Shifts     | [1232]                | [15384]
+    Service Level (SLA %)     | [98.7]%                 | [99.2]%
+    Avg Speed of Answer       | [3.7] s                | [3.4] s
+    Queue Abandonment Rate    | [2.61]%             | [2.61]%
     ===========================================================================
     ```
 
@@ -147,17 +130,12 @@ To launch the interactive dashboard locally:
     [QUANTUM LAYER] Compiling 3D Variables (Agent x Shift x Queue)...
     [QUANTUM LAYER] Compiling H_demand (Slack & Non-Linear Proficiency)...
     [QUANTUM LAYER] Initializing D-Wave Simulated Annealing...
-
-    ======================================================================
-     🚀 FINAL ENTERPRISE SCHEDULE (3D QUANTUM QUBO)
-    ======================================================================
-    ✅ [Agent_ID] (Tier [T] | Prof: [P]x) -> [Shift] on [Queue] [Mismatch Flag]
     ...
     ----------------------------------------------------------------------
-    Total Annealing Time     : [Time] sec
-    Total Agents Deployed    : [Count]
-    Total Projected Payroll  : $[Cost]
-    Sub-Optimal Routings     : [Count]
+    Total Annealing Time     : 507.1269 sec
+      Total Agents Deployed    : 3778
+      Total Projected Payroll  : $784,530.63
+      Sub-Optimal Routings     : 460
     ======================================================================
     ```
 
@@ -176,28 +154,23 @@ To launch the interactive dashboard locally:
     [QUANTUM LAYER] Initializing D-Wave Simulated Annealing...
 
     ===========================================================================
-     📊 VANGUARD ENTERPRISE SCORECARD (FULL CAPACITY HEAD-TO-HEAD)
-    ===========================================================================
-    Operational Metric        | Classical ILP (PuLP)   | Quantum QUBO (neal)
-    ---------------------------------------------------------------------------
-    Execution Time (sec)      | [Time]                 | [Time]
-    Total Agents Deployed     | [Count]                | [Count]
-    Projected Payroll         | $[Cost]                | $[Cost]
-    Routing Mismatches        | [Count]                | [Count]
-    Off-Preference Shifts     | [Count]                | [Count]
-    Service Level (SLA %)     | [SLA]%                 | [SLA]%
-    Avg Speed of Answer       | [ASA] s                | [ASA] s
-    Queue Abandonment Rate    | [Abandon]%             | [Abandon]%
-    ===========================================================================
+      Operational Metric        | Classical ILP (PuLP) | Quantum QUBO (neal) 
+      ---------------------------------------------------------------------------
+      Execution Time (sec)      | 25.1125              | 1119.4795           
+      Total Agents Deployed     | 4179                 | 3885                
+      Projected Payroll         | $844,073.73          | $807,364.08         
+      Routing Mismatches        | 0                    | 457                 
+      Off-Preference Shifts     | 1586                 | 2485                
+      Service Level (SLA %)     | 92.7               % | 82.7               %
+      Avg Speed of Answer       | 28.2               s | 75.8               s
+      Queue Abandonment Rate    | 18.98              % | 39.66              %
+      ===========================================================================
     ```
 
 ### 7. `HYBRID_QUBO.py`
 *   **Description:** Explores decoupling static history by integrating Machine Learning, using `RandomForestRegressor` and `RandomForestClassifier` pipelines to forecast volume, AHT, and agent shrinkage[cite: 7]. It applies a strict time-series train/test split to prevent data leakage before generating the QUBO matrix[cite: 7].
 *   **Expected Output:**
     ```text
-    ============================================================
-     🚀 VANGUARD WISER: HYBRID AI + QUANTUM OPTIMIZATION PIPELINE
-    ============================================================
     [1] Running Layer 1: AI Workload & AHT Predictive Forecaster...
         -> Forecasted Future Volume (20% Test Split): [N] calls
     [2] Running Layer 2: AI Absenteeism & Shrinkage Risk Estimator...
@@ -210,11 +183,13 @@ To launch the interactive dashboard locally:
     ============================================================
      📊 HYBRID AI + QUANTUM OPTIMIZER: FINAL RESULTS
     ============================================================
-     ML Predicted Shrinkage Buffer : [Rate]%
-     Quantum Solver Execution Time : [Time] seconds
-     Total Elite Agents Scheduled  : [Count]
-     Off-Preference Assignments    : [Count] agents ([Pct]%)
-     Total Labor Payroll Cost      : $[Cost]
+     ML Predicted Shrinkage Buffer : [18]%
+     Quantum Solver Execution Time : [714] seconds
+     Total Elite Agents Scheduled  : [133]
+     Off-Preference Assignments    : [79] agents ([Pct]%)
+     Total Labor Payroll Cost      : $[34,126.65]
+     Service level(SLA)            : [2.4]%
+     Abandonment Rate              : [79.52]%
     ============================================================
     ```
 
@@ -237,8 +212,8 @@ To launch the interactive dashboard locally:
     ✅ [Agent_ID] (Tenure: [Value]) -> [Shift] | Cost: $[Cost] [Preference Flag]
     ...
     ------------------------------------------------------------
-    Total Elite Agents Assigned: [Count]
-    Rule Violations (Cloned Agents): 0 (Must be 0)
-    Total Specialized Labor Cost: $[Cost]
+    Total Agents Assigned: [50]
+    Rule Violations (Cloned Agents): 0 
+    Cost: $[8662.15]
     ============================================================
     ```
