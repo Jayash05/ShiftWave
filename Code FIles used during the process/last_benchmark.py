@@ -1,8 +1,3 @@
-"""
-Vanguard 2.0: FULL ENTERPRISE SCALE (Uncapped)
-Classical vs. Quantum Head-to-Head Benchmark
-"""
-
 import math
 import time
 import numpy as np
@@ -16,9 +11,7 @@ except ImportError:
     print("FATAL ERROR: 'dwave-neal' is required. Run: pip install dwave-neal")
     exit()
 
-# ==========================================
 # 1. QUEUE PHYSICS (ERLANG C)
-# ==========================================
 def erlang_c(A, N):
     if N <= A: return 1.0 
     inv_b = 1.0
@@ -40,9 +33,7 @@ def calculate_erlang_target(hourly_rate, aht, target_sla=0.90, target_asa=10.0):
         N += 1
 
 
-# ==========================================
 # 2. EVALUATION ENGINE (SLA & QUEUE METRICS)
-# ==========================================
 def evaluate_schedules(df_forecast_dict, best_sample, df_agents, shifts):
     schedule_counts = {q: {t: 0 for t in range(96)} for q in df_forecast_dict.keys()}
     off_pref = 0
@@ -54,7 +45,7 @@ def evaluate_schedules(df_forecast_dict, best_sample, df_agents, shifts):
             s_name = parts[3]
             q_name = "_".join(parts[4:])
             
-            # THE FIX: If Quantum noise assigns an agent to a queue with no forecast, safely track it
+            # [FIX:] If Quantum noise assigns an agent to a queue with no forecast to safely track it
             if q_name not in schedule_counts:
                 schedule_counts[q_name] = {t: 0 for t in range(96)}
                 
@@ -105,9 +96,8 @@ def evaluate_schedules(df_forecast_dict, best_sample, df_agents, shifts):
     
     return sla_pct, asa, abandon_pct, off_pref
 
-# ==========================================
+
 # 3. CLASSICAL LP BASELINE (PuLP)
-# ==========================================
 def execute_classical_model(df_forecast_dict, df_agents, shifts, queue_metadata):
     print("\n[CLASSICAL LAYER] Executing PuLP Linear Programming (Up to 5 min limit)...")
     start_time = time.time()
@@ -186,9 +176,7 @@ def execute_classical_model(df_forecast_dict, df_agents, shifts, queue_metadata)
 
     return best_sample, duration, assigned, cost, cross_skill
 
-# ==========================================
-# 4. QUANTUM 3D QUBO 
-# ==========================================
+# 4. QUANTUM 3D QUBO
 def build_3d_hamiltonian(df_forecast_dict, df_agents, shifts, queue_metadata):
     Q = {}
     def add_weight(v1, v2, weight):
@@ -294,9 +282,7 @@ def execute_quantum_model(df_forecast_dict, df_agents, shifts, queue_metadata):
                 
     return best_sample, duration, assigned, cost, cross_skill_penalty
 
-# ==========================================
 # 5. MASTER EXECUTION & SCORECARD
-# ==========================================
 if __name__ == "__main__":
     print("[1] Loading external datasets...")
     try:
@@ -335,13 +321,13 @@ if __name__ == "__main__":
     df_agents['Proficiency'] = df_agents['Tenure_AHT_Multiplier'] * df_agents['Micro_Break_Capacity_Multiplier']
     df_agents = df_agents.sort_values(by=['Is_FT', 'Proficiency'], ascending=[False, False])
     
-    # UNCAPPED POOL: Passing the full mathematically required roster.
+    #Passing the full mathematically required matrix.
     total_peak = sum(df['Target_Headcount'].max() for df in df_forecast_dict.values())
     calculated_pool = int(max(total_peak * 1.5, 50))
     elite_pool = df_agents.head(calculated_pool).reset_index(drop=True)
     
-    print(f"    -> Target Demand requires ~{calculated_pool} agents.")
-    print(f"    -> Dynamically scoped matrix to {len(elite_pool)} agents (FULL POOL UNCAPPED).")
+    print(f" Target Demand requires ~{calculated_pool} agents.")
+    print(f"Dynamically scoped matrix to {len(elite_pool)} agents (FULL POOL UNCAPPED).")
 
     shifts = {
         'Morning': [1 if 24 <= t < 56 else 0 for t in range(96)],
@@ -355,10 +341,7 @@ if __name__ == "__main__":
     
     c_sla, c_asa, c_aband, c_off = evaluate_schedules(df_forecast_dict, c_sample, elite_pool, shifts)
     q_sla, q_asa, q_aband, q_off = evaluate_schedules(df_forecast_dict, q_sample, elite_pool, shifts)
-    
-    print("\n" + "="*75)
-    print(" 📊 VANGUARD ENTERPRISE SCORECARD (FULL CAPACITY HEAD-TO-HEAD)")
-    print("="*75)
+   
     print(f"{'Operational Metric':<25} | {'Classical ILP (PuLP)':<20} | {'Quantum QUBO (neal)':<20}")
     print("-" * 75)
     print(f"{'Execution Time (sec)':<25} | {c_time:<20.4f} | {q_time:<20.4f}")
@@ -369,4 +352,3 @@ if __name__ == "__main__":
     print(f"{'Service Level (SLA %)':<25} | {c_sla:<19.1f}% | {q_sla:<19.1f}%")
     print(f"{'Avg Speed of Answer':<25} | {c_asa:<18.1f} s | {q_asa:<18.1f} s")
     print(f"{'Queue Abandonment Rate':<25} | {c_aband:<19.2f}% | {q_aband:<19.2f}%")
-    print("="*75)
