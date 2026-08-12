@@ -1,11 +1,3 @@
-"""
-Vanguard 9.0: THE DUAL-ENGINE ENTERPRISE HYBRID
-Phase 1: Classical Temporal Bounds (Erlang C)
-Phase 2: Dynamic Pool Trimming & Micro-Clustering (Speed + Resolution)
-Phase 3: High-Resolution BQM Quantum Assignment
-Phase 4: Dual-Engine Evaluation (Macro Math vs. Micro Reality)
-"""
-
 import math
 import time
 import os
@@ -13,9 +5,7 @@ import pandas as pd
 import dimod
 import neal
 
-# ==========================================
 # 1. QUEUE PHYSICS (ERLANG C)
-# ==========================================
 def erlang_c(A, N):
     if N <= A: return 1.0 
     inv_b = 1.0
@@ -36,9 +26,7 @@ def calculate_erlang_target(hourly_rate, aht, target_sla=0.90, target_asa=10.0):
             return N
         N += 1
 
-# ==========================================
 # 2. EVALUATION ENGINE A: ERLANG C (MACRO)
-# ==========================================
 def evaluate_schedules(df_forecast_dict, best_sample, df_agents, shifts):
     schedule_counts = {q: {t: 0 for t in range(96)} for q in df_forecast_dict.keys()}
     off_pref = 0
@@ -100,9 +88,7 @@ def evaluate_schedules(df_forecast_dict, best_sample, df_agents, shifts):
     
     return sla_pct, asa, abandon_pct, off_pref
 
-# ==========================================
-# 3. EVALUATION ENGINE B: EVENT SIMULATOR (MICRO)
-# ==========================================
+# 3. EVALUATION: EVENT SIMULATOR (MICRO)
 def simulate_agent_workday(df_calls, best_sample, shifts):
     print("\n[DIAGNOSTIC] Running Discrete Event Simulation on Quantum Schedule...")
     
@@ -164,9 +150,7 @@ def simulate_agent_workday(df_calls, best_sample, shifts):
         
     return pd.DataFrame(results)
 
-# ==========================================
-# 4. MODULE A: CLASSICAL MASTER
-# ==========================================
+# 4. MODULE A: CLASSICAL MACHINE
 def calculate_classical_shift_targets(df_forecast_dict, shifts):
     print("\n[MODULE A] Classical Phase: Calculating Temporal SLA Bounds...")
     start_time = time.time()
@@ -188,9 +172,7 @@ def calculate_classical_shift_targets(df_forecast_dict, shifts):
     exec_time = time.time() - start_time
     return shift_targets, exec_time
 
-# ==========================================
 # 5. MODULE B: HIGH-RESOLUTION BQM ASSIGNMENT
-# ==========================================
 def execute_high_res_quantum(df_forecast_dict, df_agents, shifts, queue_metadata):
     total_start = time.time()
     shift_targets, _ = calculate_classical_shift_targets(df_forecast_dict, shifts)
@@ -198,7 +180,6 @@ def execute_high_res_quantum(df_forecast_dict, df_agents, shifts, queue_metadata
     print("[MODULE B] Processing Trimmed Agent Pool (Micro-Clustering)...")
     squads = []
     
-    # THE SWEET SPOT: Resolution vs Execution Speed
     SQUAD_SIZE = 5 
     grouped = df_agents.groupby(['Tier', 'Preferred_Shift'])
     
@@ -258,7 +239,7 @@ def execute_high_res_quantum(df_forecast_dict, df_agents, shifts, queue_metadata
             for j in range(i+1, len(all_vars)):
                 add_quad(all_vars[i], all_vars[j], 2 * PENALTY_1)
 
-    # MASSIVE SLA ENFORCER to beat the Abandonment Trap
+    # MASSIVE SLA ENFORCER to reduce the Abandonment rate
     PENALTY_2 = 250.0 
     slot_vars = {q: {s: [] for s in shift_names} for q in queue_metadata.keys()}
     
@@ -325,9 +306,6 @@ def execute_high_res_quantum(df_forecast_dict, df_agents, shifts, queue_metadata
 
     return final_dict, total_time, assigned, cost, cross_skill
 
-# ==========================================
-# 6. MASTER EXECUTION (DUAL-ENGINE EVAL)
-# ==========================================
 if __name__ == "__main__":
     print("[1] Checking for datasets...")
     
@@ -387,13 +365,12 @@ if __name__ == "__main__":
         
     df_agents_trimmed = df_agents.head(pool_size).copy()
     
-    # EXECUTE QUANTUM PIPELINE
     q_sample, q_time, q_assigned, q_cost, q_cross = execute_high_res_quantum(df_forecast_dict, df_agents_trimmed, shifts, queue_metadata)
     
-    # RUN EVALUATOR A (ERLANG C)
+    # RUN EVALUATOR  (ERLANG C)
     q_sla, q_asa, q_aband, q_off = evaluate_schedules(df_forecast_dict, q_sample, df_agents_trimmed, shifts)
     
-    # RUN EVALUATOR B (EVENT SIMULATOR)
+    # RUN EVALUATOR 1 (EVENT SIMULATOR)
     df_agent_stats = simulate_agent_workday(day_calls, q_sample, shifts)
     
     active_agents = df_agent_stats[df_agent_stats['Calls_Taken'] > 0]
@@ -401,10 +378,7 @@ if __name__ == "__main__":
     zero_call_agents = len(df_agent_stats[df_agent_stats['Calls_Taken'] == 0])
     busiest_agent_calls = active_agents['Calls_Taken'].max() if not active_agents.empty else 0
     
-    # PRINT DUAL-ENGINE SCORECARD
-    print("\n" + "="*75)
-    print(" 📊 VANGUARD ENTERPRISE SCORECARD (DUAL-ENGINE EVALUATION)")
-    print("="*75)
+   
     print("--- MACRO METRICS (ERLANG C) ---")
     print(f"{'Execution Time (sec)':<30} | {q_time:<20.4f}")
     print(f"{'Total Agents Deployed':<30} | {q_assigned:<20}")
@@ -417,7 +391,6 @@ if __name__ == "__main__":
     print(f"{'Avg Idle Time Between Calls':<30} | {avg_idle_time:<18.1f} mins")
     print(f"{'Agents Who Took ZERO Calls':<30} | {zero_call_agents:<20}")
     print(f"{'Max Calls Taken by One Agent':<30} | {busiest_agent_calls:<20}")
-    print("="*75)
     
     if not active_agents.empty:
         print("\n🚨 EXTREME OVERWORK (Top 3 Busiest Agents):")
