@@ -84,10 +84,7 @@ def solve_classical_mip(interval_stats, df_agents, target_queue):
     prob.solve(pulp.PULP_CBC_CMD(msg=True, timeLimit=300))
     
     execution_time = time.time() - start_time
-    
-    print("\n" + "="*50)
-    print(f" 🖥️ CLASSICAL SOLVER RESULTS ({pulp.LpStatus[prob.status]})")
-    print("="*50)
+    print(f" CLASSICAL SOLVER RESULTS ({pulp.LpStatus[prob.status]})")
     
     total_cost = 0
     assigned_agents = 0
@@ -107,7 +104,6 @@ def solve_classical_mip(interval_stats, df_agents, target_queue):
     print(f"Total Agents      : {assigned_agents}")
     print(f"Total Labor Cost  : ${total_cost:.2f}")
     print(f"Off-Preference    : {off_preference} agents")
-    print("="*50)
     
     return prob
 
@@ -136,7 +132,6 @@ if __name__ == "__main__":
         df_events = pd.read_csv('call_log.csv')
         df_events['Arrival_Timestamp'] = pd.to_datetime(df_events['Arrival_Timestamp'])
         
-        # Adjust 'Advisor_Support' to match whatever is in your CSV
         target_queue = 'Advisor' 
         target_date = '2026-08-03'
         
@@ -160,8 +155,8 @@ if __name__ == "__main__":
         
         # -------------------------------------------------------------
         # APPLES-TO-APPLES BENCHMARK:
-        # We will feed the exact same pool of Elite Agents to the Classical
-        # solver that we fed to the Quantum Solver.
+        # Feed the exact same pool of Elite Agents to the Classical
+        # solver was fed to the Quantum Solver.
         # -------------------------------------------------------------
         skill_col = f"Skill_{target_queue.replace('_Support', '').replace('_Svc', '')}"
         if skill_col not in df_agents.columns:
@@ -178,7 +173,7 @@ if __name__ == "__main__":
             ascending=[False, False]
         ).head(int(max_needed * 1.5))
         
-        print(f"    -> Selected {len(elite_agents)} Elite Agents for the Classical Solver.")
+        print(f"Selected {len(elite_agents)} Elite Agents for the Classical Solver.")
         
         solve_classical_mip(interval_stats, elite_agents, target_queue)
         
