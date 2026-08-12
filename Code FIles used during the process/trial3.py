@@ -145,7 +145,6 @@ def execute_classical_model(df_forecast_dict, df_agents, shifts, queue_metadata)
                     objective.append((h_cost + h_friction + h_routing) * x_vars[(a_id, s_name, q_name)])
 
     prob += pulp.lpSum(objective)
-    # Give classical 60s max to keep things competitive
     prob.solve(pulp.PULP_CBC_CMD(msg=0, timeLimit=60))
     duration = time.time() - start_time
 
@@ -166,7 +165,7 @@ def execute_classical_model(df_forecast_dict, df_agents, shifts, queue_metadata)
 
     return best_sample, duration, assigned, cost, cross_skill
 
-# 4. TRUE QUANTUM SIMULATOR (MACRO-QUBITS)
+# 4. QUANTUM SIMULATOR
 
 def execute_true_quantum_squads(df_forecast_dict, df_agents, shifts, queue_metadata):
     print("\n[QUANTUM] Clustering Agents into Macro-Qubits (Squads)...")
@@ -224,7 +223,7 @@ def execute_true_quantum_squads(df_forecast_dict, df_agents, shifts, queue_metad
         if sq_vars:
             cqm.add_constraint(sum(sq_vars) <= 1, label=f"MaxOneShift_{sq['squad_id']}")
             
-    # Hard Constraint: Demand Coverage (Integer Scaled for RAM Safety)
+    # Hard Constraint: Demand Coverage (Integer Scaled for RAM crash prevention)
     for q_name, df_forecast in df_forecast_dict.items():
         meta = queue_metadata[q_name]
         q_tier = meta['tier']
@@ -303,9 +302,7 @@ def execute_true_quantum_squads(df_forecast_dict, df_agents, shifts, queue_metad
                         final_dict[indiv_var] = 0
 
     return final_dict, duration, assigned, cost, cross_skill
-# ==========================================
-# 5. MASTER EXECUTION
-# ==========================================
+
 if __name__ == "__main__":
     print("[1] Loading existing datasets (agent_data.csv & call_log.csv)...")
     try:
@@ -318,11 +315,8 @@ if __name__ == "__main__":
     print("[2] Processing Call Data & Generating Erlang C Targets...")
     df_calls['Arrival_Timestamp'] = pd.to_datetime(df_calls['Arrival_Timestamp'])
     target_date = df_calls['Arrival_Timestamp'].dt.date.min()
-    # Ensure we only calculate humans
     day_calls = df_calls[(df_calls['Arrival_Timestamp'].dt.date == target_date) & (df_calls['Handled_By'] == 'Human')].copy()
     
-    # NOTE: Updated to exactly match your dataset columns (Skill_GenSupport)
-    # ---------------- REPLACEMENT START ----------------
     queue_metadata = {
         'General_Support': {'skill_col': 'Skill_GenSupport', 'tier': 1},
         'Advisor':         {'skill_col': 'Skill_Advisor',    'tier': 2},
@@ -333,7 +327,6 @@ if __name__ == "__main__":
     
     df_forecast_dict = {}
     for q in day_calls['Queue'].unique():
-        # BULLETPROOF SAFEGUARD: If a new queue appears, map it dynamically
         if q not in queue_metadata:
             if 'Intermed' in q:   skill, tier = 'Skill_Intermed', 3
             elif 'Advisor' in q:  skill, tier = 'Skill_Advisor', 2
@@ -347,7 +340,6 @@ if __name__ == "__main__":
         interval_stats['Target_Headcount'] = interval_stats.apply(
             lambda row: calculate_erlang_target(row['Volume'] * 4, row['AHT'] if row['AHT'] > 0 else 240.0), axis=1)
         df_forecast_dict[q] = interval_stats.reset_index()
-    # ---------------- REPLACEMENT END ----------------
 
     shifts = {
         'Morning': [1 if 24 <= t < 56 else 0 for t in range(96)],
@@ -355,18 +347,14 @@ if __name__ == "__main__":
         'Evening': [1 if 56 <= t < 88 else 0 for t in range(96)],
         'Off':     [0 for _ in range(96)]
     }
-    
-    # Run Solvers
+   
     c_sample, c_time, c_assigned, c_cost, c_cross = execute_classical_model(df_forecast_dict, df_agents, shifts, queue_metadata)
     q_sample, q_time, q_assigned, q_cost, q_cross = execute_true_quantum_squads(df_forecast_dict, df_agents, shifts, queue_metadata)
     
-    # Evaluate Outcomes
+    # Evaluation
     c_sla, c_asa, c_aband, c_off = evaluate_schedules(df_forecast_dict, c_sample, df_agents, shifts)
     q_sla, q_asa, q_aband, q_off = evaluate_schedules(df_forecast_dict, q_sample, df_agents, shifts)
-    
-    print("\n" + "="*75)
-    print(" 📊 VANGUARD ENTERPRISE SCORECARD (CLASSICAL VS. QUANTUM-INSPIRED)")
-    print("="*75)
+ 
     print(f"{'Operational Metric':<25} | {'Classical ILP (PuLP)':<20} | {'Quantum-Inspired':<20}")
     print("-" * 75)
     print(f"{'Execution Time (sec)':<25} | {c_time:<20.4f} | {q_time:<20.4f}")
@@ -377,4 +365,3 @@ if __name__ == "__main__":
     print(f"{'Service Level (SLA %)':<25} | {c_sla:<19.1f}% | {q_sla:<19.1f}%")
     print(f"{'Avg Speed of Answer':<25} | {c_asa:<18.1f} s | {q_asa:<18.1f} s")
     print(f"{'Queue Abandonment Rate':<25} | {c_aband:<19.2f}% | {q_aband:<19.2f}%")
-    print("="*75)
