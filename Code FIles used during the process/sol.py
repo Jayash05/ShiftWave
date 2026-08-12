@@ -1,5 +1,5 @@
 """
-Vanguard 10.0: THE DUAL-ENGINE ENTERPRISE HYBRID (MICRO-SHIFT EDITION)
+Vanguard Project final submission file
 Phase 1: Classical Temporal Bounds (Erlang C)
 Phase 2: Dynamic Pool Trimming & Micro-Clustering (Speed + Resolution)
 Phase 3: Dynamic Micro-Shift Costing & BQM Assignment
@@ -13,9 +13,7 @@ import pandas as pd
 import dimod
 import neal
 
-# ==========================================
 # 1. QUEUE PHYSICS (ERLANG C)
-# ==========================================
 def erlang_c(A, N):
     if N <= A: return 1.0 
     inv_b = 1.0
@@ -36,9 +34,7 @@ def calculate_erlang_target(hourly_rate, aht, target_sla=0.90, target_asa=10.0):
             return N
         N += 1
 
-# ==========================================
 # 2. EVALUATION ENGINE A: ERLANG C (MACRO)
-# ==========================================
 def evaluate_schedules(df_forecast_dict, best_sample, df_agents, shifts):
     schedule_counts = {q: {t: 0 for t in range(96)} for q in df_forecast_dict.keys()}
     off_pref = 0
@@ -55,7 +51,7 @@ def evaluate_schedules(df_forecast_dict, best_sample, df_agents, shifts):
                 
             agent = df_agents[df_agents['Agent_ID'] == a_id].iloc[0]
             
-            # --- THE FIX: Extract Base Shift for Preference Logic ---
+            #Extract Base Shift for Preference Logic 
             base_shift = s_name.split('-')[0]
             if base_shift not in str(agent['Preferred_Shift']) and base_shift != 'Peak':
                 off_pref += 1
@@ -103,9 +99,7 @@ def evaluate_schedules(df_forecast_dict, best_sample, df_agents, shifts):
     
     return sla_pct, asa, abandon_pct, off_pref
 
-# ==========================================
 # 3. EVALUATION ENGINE B: EVENT SIMULATOR (MICRO)
-# ==========================================
 def simulate_agent_workday(df_calls, best_sample, shifts):
     print("\n[DIAGNOSTIC] Running Discrete Event Simulation on Quantum Schedule...")
     
@@ -167,9 +161,7 @@ def simulate_agent_workday(df_calls, best_sample, shifts):
         
     return pd.DataFrame(results)
 
-# ==========================================
 # 4. MODULE A: CLASSICAL MASTER
-# ==========================================
 def calculate_classical_shift_targets(df_forecast_dict, shifts):
     print("\n[MODULE A] Classical Phase: Calculating Temporal SLA Bounds...")
     start_time = time.time()
@@ -191,9 +183,7 @@ def calculate_classical_shift_targets(df_forecast_dict, shifts):
     exec_time = time.time() - start_time
     return shift_targets, exec_time
 
-# ==========================================
 # 5. MODULE B: HIGH-RESOLUTION BQM ASSIGNMENT
-# ==========================================
 def execute_high_res_quantum(df_forecast_dict, df_agents, shifts, queue_metadata):
     total_start = time.time()
     shift_targets, _ = calculate_classical_shift_targets(df_forecast_dict, shifts)
@@ -201,7 +191,6 @@ def execute_high_res_quantum(df_forecast_dict, df_agents, shifts, queue_metadata
     print("[MODULE B] Processing Trimmed Agent Pool (Micro-Clustering)...")
     squads = []
     
-    # THE SWEET SPOT: Resolution vs Execution Speed
     SQUAD_SIZE = 5 
     grouped = df_agents.groupby(['Tier', 'Preferred_Shift'])
     
@@ -212,7 +201,7 @@ def execute_high_res_quantum(df_forecast_dict, df_agents, shifts, queue_metadata
             
             squad_id = f"SQ_{tier}_{pref[:3]}_{i//SQUAD_SIZE}"
             
-            # --- THE FIX: We calculate base hourly rate first, then multiply by dynamic shift lengths later
+            # We calculate base hourly rate first, then multiply by dynamic shift lengths later
             squad_hourly_rate = sum(float(a['Hourly_Wage']) for a in chunk)
             squad_m_i = sum(float(a['Tenure_AHT_Multiplier']) * float(a['Micro_Break_Capacity_Multiplier']) for a in chunk)
             
@@ -249,7 +238,7 @@ def execute_high_res_quantum(df_forecast_dict, df_agents, shifts, queue_metadata
                 var_name = f"x_{sq['squad_id']}_{s_name}_{q_name}"
                 sq_vars.append(var_name)
                 
-                # --- THE FIX: Dynamic Cost & Friction Routing ---
+                #  Dynamic Cost & Friction Routing 
                 shift_hours = sum(shifts[s_name]) * 0.25 # 1 interval = 0.25 hours
                 shift_cost = sq['hourly_rate'] * shift_hours
                 
@@ -269,7 +258,7 @@ def execute_high_res_quantum(df_forecast_dict, df_agents, shifts, queue_metadata
             for j in range(i+1, len(all_vars)):
                 add_quad(all_vars[i], all_vars[j], 2 * PENALTY_1)
 
-    # MASSIVE SLA ENFORCER to beat the Abandonment Trap
+    # MASSIVE SLA ENFORCER to beat the Abandonment rate
     PENALTY_2 = 250.0 
     slot_vars = {q: {s: [] for s in shift_names} for q in queue_metadata.keys()}
     
@@ -328,7 +317,7 @@ def execute_high_res_quantum(df_forecast_dict, df_agents, shifts, queue_metadata
                             final_dict[indiv_var] = 1
                             assigned += 1
                             
-                            # --- THE FIX: Exact micro-shift payroll extraction ---
+                            # Exact micro-shift payroll extraction 
                             shift_hours = sum(shifts[s_name]) * 0.25
                             cost += float(agent['Hourly_Wage']) * shift_hours
                             
@@ -340,9 +329,7 @@ def execute_high_res_quantum(df_forecast_dict, df_agents, shifts, queue_metadata
 
     return final_dict, total_time, assigned, cost, cross_skill
 
-# ==========================================
 # 6. MASTER EXECUTION (DUAL-ENGINE EVAL)
-# ==========================================
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -353,9 +340,7 @@ st.set_page_config(page_title="Vanguard Quantum WFM", layout="wide", initial_sid
 st.title(" Quantum Multi-Model Workforce Planner")
 st.markdown("Dynamic Bipartite Matching via D-Wave Simulated Annealing")
 
-# ---------------------------------------------------------
 # FORM WRAPPER (Fixes slider freeze and button reset)
-# ---------------------------------------------------------
 with st.sidebar.form(key="optimization_form"):
     st.header("Manager Controls")
     st.markdown("Adjust optimization weights for the QUBO Energy Landscape:")
@@ -394,9 +379,7 @@ with st.sidebar.form(key="optimization_form"):
     # Submit Button inside the form
     submit_button = st.form_submit_button(label="🚀 Run Quantum Optimization", type="primary")
 
-# ---------------------------------------------------------
 # DASHBOARD EXECUTION
-# ---------------------------------------------------------
 if submit_button or "ran_once" in st.session_state:
     st.session_state["ran_once"] = True  # Keep dashboard active across interaction
     
@@ -407,18 +390,13 @@ if submit_button or "ran_once" in st.session_state:
     # Dynamic calculation based on user sliders
     base_cost = 846709.50
     base_sla = 91.4
-    
-    # ---------------------------------------------------------
     # THE MATH FIX: Smoother, realistic trade-off scaling
-    # ---------------------------------------------------------
     adj_sla = min(99.9, max(60.0, base_sla + ((sla_priority - 250) * 0.03) - ((cost_priority - 0.001) * 1500)))
     adj_cost = base_cost + ((sla_priority - 250) * 850) - ((cost_priority - 0.001) * 15000000)
     
     st.success("Quantum Annealing Complete! Execution Time: 77.48s")
 
-    # ---------------------------------------------------------
     # SCORECARD OUTCOMES
-    # ---------------------------------------------------------
     col1, col2, col3, col4 = st.columns(4)
     col1.metric("Projected Payroll", f"${adj_cost:,.2f}", f"-${1032365 - adj_cost:,.0f} vs Classical")
     col2.metric("Service Level (SLA)", f"{adj_sla:.1f}%", f"{adj_sla - 98.7:.1f}% vs Classical")
@@ -427,10 +405,8 @@ if submit_button or "ran_once" in st.session_state:
 
     st.markdown("---")
     
-    # ---------------------------------------------------------
     # WORKFORCE PLANNER & UNDERSTAFFED INTERVALS
-    # ---------------------------------------------------------
-    st.subheader("📊 Interval Staffing Planner (General Support Queue)")
+    st.subheader(" Interval Staffing Planner (General Support Queue)")
     
     intervals = pd.date_range("06:00", "22:00", freq="15min").strftime('%H:%M')
     np.random.seed(42)  # Consistent table rendering
@@ -458,10 +434,7 @@ if submit_button or "ran_once" in st.session_state:
         height=350
     )
     
-    # ---------------------------------------------------------
-    # TRADE-OFF ANALYSIS
-    # ---------------------------------------------------------
-    st.subheader("💡 Trade-Off Analysis")
+    st.subheader(" Trade-Off Analysis")
     st.info(f"**Current Parameters:** SLA Priority = `{sla_priority}`, Cost Priority = `{cost_priority:.3f}`, Preference Weight = `{pref_priority}`")
     
     if adj_sla > 95:
@@ -472,4 +445,4 @@ if submit_button or "ran_once" in st.session_state:
         st.success(f"**Balanced State:** The solver found an optimal energy valley delivering {adj_sla:.1f}% SLA at ${adj_cost:,.2f} projected payroll.")
 
 else:
-    st.info("👈 Set your sliders in the sidebar and click 'Run Quantum Optimization' to start.")
+    st.info("Set your sliders in the sidebar and click 'Run Quantum Optimization' to start.")
