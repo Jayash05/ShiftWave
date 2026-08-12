@@ -5,9 +5,7 @@ import pandas as pd
 from sklearn.ensemble import RandomForestRegressor, RandomForestClassifier
 import neal
 
-# ==========================================
 # 1. ERLANG C MATHEMATICAL ENGINE (Stable)
-# ==========================================
 def erlang_c(A, N):
     if N <= A: return 1.0 
     inv_b = 1.0
@@ -28,9 +26,7 @@ def calculate_erlang_target(hourly_rate, aht, target_asa=20.0, target_sla=0.80):
             return N
         N += 1
 
-# ==========================================
 # 2. LAYER 1: AI PREDICTIVE VOLUME FORECASTER
-# ==========================================
 class AIWorkloadForecaster:
     def __init__(self):
         self.volume_model = RandomForestRegressor(n_estimators=50, random_state=42)
@@ -72,9 +68,7 @@ class AIWorkloadForecaster:
         y_vol = aggregated['Call_Count']
         y_aht = aggregated['Avg_AHT'].fillna(240.0)
 
-        # =======================================================
-        # DATA LEAKAGE FIX: PROPER TIME-SERIES TRAIN/TEST SPLIT
-        # =======================================================
+        # !!DATA LEAKAGE Problem:, Sol: TIME-SERIES SPLIT
         # Calculate the 80% cutoff index
         split_idx = int(len(aggregated) * 0.8)
 
@@ -99,9 +93,7 @@ class AIWorkloadForecaster:
         
         return future_forecast
 
-# ==========================================
 # 3. LAYER 2: AI ABSENTEEISM RISK PREDICTOR
-# ==========================================
 class AIShrinkagePredictor:
     def __init__(self):
         self.model = RandomForestClassifier(n_estimators=30, random_state=42)
@@ -122,9 +114,7 @@ class AIShrinkagePredictor:
         total_shrinkage_rate = base_shrinkage + (predicted_absentee_prob * 0.15)
         return total_shrinkage_rate
 
-# ==========================================
-# 4. QUANTUM QUBO MATRIX SOLVER ENGINE
-# ==========================================
+# 4. QUANTUM QUBO MATRIX SOLVER
 def solve_hybrid_quantum_schedule(df_agents, interval_targets, shift_defs, time_indices):
     print("\n[3] Building Native QUBO Matrix across AI-Adjusted Targets...")
     
@@ -164,13 +154,13 @@ def solve_hybrid_quantum_schedule(df_agents, interval_targets, shift_defs, time_
                 if s_name not in preferred:
                     Q[(idx, idx)] = Q.get((idx, idx), 0) + L3_FRICTION
 
-    # 3. AI Demand Coverage Constraint (WITH SLACK VARIABLES)
+    # 3. AI Demand Coverage Constraint Via Slack Var
     offset = num_agents * num_shifts
     for t_idx, target_capacity in enumerate(interval_targets):
         if target_capacity <= 0:
             continue
         
-        # Map the test set index to the ACTUAL time of day (0-95)
+        # Mapping
         time_of_day = time_indices[t_idx]
         
         interval_vars = []
@@ -202,7 +192,7 @@ def solve_hybrid_quantum_schedule(df_agents, interval_targets, shift_defs, time_
     solve_duration = time.time() - start_time
     
     best_sample = response.first.sample
-    print(f"    -> Quantum Annealing Complete in {solve_duration:.4f} seconds.")
+    print(f"Quantum Annealing Complete in {solve_duration:.4f} seconds.")
 
     assigned_count = 0
     off_preference_count = 0
@@ -223,13 +213,8 @@ def solve_hybrid_quantum_schedule(df_agents, interval_targets, shift_defs, time_
 
     return assigned_count, off_preference_count, total_cost, solve_duration
 
-# ==========================================
 # 5. MAIN INTEGRATED EXECUTION PIPELINE
-# ==========================================
 def run_hybrid_ai_quantum_pipeline(call_log_path, agent_roster_path, queue_filter='Advisor_Support'):
-    print("============================================================")
-    print(" 🚀 VANGUARD WISER: HYBRID AI + QUANTUM OPTIMIZATION PIPELINE")
-    print("============================================================")
 
     df_log = pd.read_csv(call_log_path)
     df_agents = pd.read_csv(agent_roster_path)
@@ -259,8 +244,7 @@ def run_hybrid_ai_quantum_pipeline(call_log_path, agent_roster_path, queue_filte
         raw_target = calculate_erlang_target(hourly_rate, aht)
         ai_padded_target = math.ceil(raw_target * (1.0 + predicted_shrinkage))
         interval_targets.append(ai_padded_target)
-        
-        # Keep track of the actual time of day (0-95) for the QUBO Shift mapping
+        # tracks time to check 
         interval_of_day = int(row['Hour'] * 4 + row['Minute'] // 15)
         time_indices.append(interval_of_day)
 
@@ -287,15 +271,12 @@ def run_hybrid_ai_quantum_pipeline(call_log_path, agent_roster_path, queue_filte
         df_agents, interval_targets, shift_defs, time_indices
     )
 
-    print("\n============================================================")
-    print(" 📊 HYBRID AI + QUANTUM OPTIMIZER: FINAL RESULTS")
-    print("============================================================")
+    print(" HYBRID AI + QUANTUM OPTIMIZER: FINAL RESULTS")
     print(f" ML Predicted Shrinkage Buffer : {predicted_shrinkage * 100:.2f}%")
     print(f" Quantum Solver Execution Time : {duration:.4f} seconds")
     print(f" Total Elite Agents Scheduled  : {assigned}")
     print(f" Off-Preference Assignments    : {off_pref} agents ({off_pref/max(1,assigned)*100:.1f}%)")
     print(f" Total Labor Payroll Cost      : ${cost:,.2f}")
-    print("============================================================")
 
 if __name__ == "__main__":
     run_hybrid_ai_quantum_pipeline("call_log.csv", "agent_data.csv", queue_filter="Advisor")
