@@ -1,8 +1,3 @@
-"""
-Vanguard 2.0: Quantum-Assisted Workforce Optimization Pipeline
-Master's Tech / Capstone Submission Model
-"""
-
 import math
 import time
 import numpy as np
@@ -15,9 +10,7 @@ except ImportError:
     print("FATAL ERROR: 'dwave-neal' is required. Run: pip install dwave-neal")
     exit()
 
-# ==========================================
 # 1. QUEUE PHYSICS (ERLANG C)
-# ==========================================
 def erlang_c(A, N):
     if N <= A: return 1.0 
     inv_b = 1.0
@@ -38,9 +31,7 @@ def calculate_erlang_target(hourly_rate, aht, target_sla=0.80, target_asa=20.0):
             return N
         N += 1
 
-# ==========================================
 # 2. 3D HAMILTONIAN QUBO COMPILER
-# ==========================================
 def build_3d_hamiltonian(df_forecast_dict, df_agents, shifts, queue_metadata):
     Q = {}
     def add_weight(v1, v2, weight):
@@ -131,9 +122,7 @@ def build_3d_hamiltonian(df_forecast_dict, df_agents, shifts, queue_metadata):
 
     return Q
 
-# ==========================================
 # 3. EXECUTION ENGINE
-# ==========================================
 def execute_quantum_model(df_forecast_dict, df_agents, shifts, queue_metadata):
     Q = build_3d_hamiltonian(df_forecast_dict, df_agents, shifts, queue_metadata)
     print("\n[QUANTUM LAYER] Initializing D-Wave Simulated Annealing...")
@@ -170,29 +159,21 @@ def execute_quantum_model(df_forecast_dict, df_agents, shifts, queue_metadata):
             routed_well = (v_i == v_q)
             if not routed_well: cross_skill_penalty += 1
             
-            flag = "" if routed_well else f"[⚠️ Mismatch: T{v_i} Agent on T{v_q} Queue]"
+            flag = "" if routed_well else f"[ Mismatch: T{v_i} Agent on T{v_q} Queue]"
             prof = float(agent['Tenure_AHT_Multiplier'])
-            print(f"✅ {a_id} (Tier {v_i} | Prof: {prof:.2f}x) -> {s_name} on {q_name} {flag}")
-                
-    print("-" * 70)
+            print(f" {a_id} (Tier {v_i} | Prof: {prof:.2f}x) -> {s_name} on {q_name} {flag}")
+
     print(f"Total Annealing Time     : {duration:.4f} sec")
     print(f"Total Agents Deployed    : {assigned}")
     print(f"Total Projected Payroll  : ${cost:,.2f}")
     print(f"Sub-Optimal Routings     : {cross_skill_penalty}")
-    print("="*70)
+
     return best_sample
 
-# ==========================================
-# 4. MASTER DATA PIPELINE
-# ==========================================
 if __name__ == "__main__":
     print("[1] Loading external datasets...")
-    try:
-        df_calls = pd.read_csv("call_log.csv")
-        df_agents = pd.read_csv("agent_data.csv")
-    except FileNotFoundError:
-        print("FATAL ERROR: CSV files not found. Ensure 'call_log.csv' and 'agent_data.csv' are in the directory.")
-        exit()
+    df_calls = pd.read_csv("call_log.csv")
+    df_agents = pd.read_csv("agent_data.csv")
         
     print("[2] Processing Call Data & Generating Erlang C Targets...")
     df_calls['Arrival_Timestamp'] = pd.to_datetime(df_calls['Arrival_Timestamp'])
@@ -240,9 +221,6 @@ if __name__ == "__main__":
     # Extract only what we need to keep QUBO matrix mathematically feasible
     total_peak = sum(df['Target_Headcount'].max() for df in df_forecast_dict.values())
     calculated_pool = int(max(total_peak * 1.5, 50))
-    
-    # ⚠️ HARD CAP FOR CLASSICAL CPU SIMULATION 
-    # (Limits matrix to ~1500
     
     max_cpu_limit = 250
     elite_pool = df_agents.head(int(max(total_peak * 1.5, 50))).reset_index(drop=True)
