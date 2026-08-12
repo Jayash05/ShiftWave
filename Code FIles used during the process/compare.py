@@ -7,9 +7,7 @@ from itertools import combinations
 import neal
 import pulp
 
-# ==========================================
 # 1. ADVANCED WFM METRIC FUNCTIONS (Erlang C)
-# ==========================================
 def erlang_c(A, N):
     if N <= A: return 1.0 
     inv_b = 1.0
@@ -38,7 +36,7 @@ def evaluate_operational_performance(forecast_df, scheduled_agents_by_interval, 
     agent_busy_seconds = 0
     agent_total_capacity_seconds = 0
     
-    # [FIX 1] Added total_sl_calls to properly weight SLA across all intervals
+    # [FIX] Added total_sl_calls to properly weight SLA across all intervals
     total_sl_calls = 0  
     
     sl_target_time = 20.0 
@@ -67,7 +65,7 @@ def evaluate_operational_performance(forecast_df, scheduled_agents_by_interval, 
             total_answered_wait += answered_calls * asa
             total_abandoned += abandoned_calls
             total_handled += answered_calls
-            total_sl_calls += answered_calls * sl # Accumulate SLA successful calls
+            total_sl_calls += answered_calls * sl # to Accumulate SLA successful calls
             
             agent_busy_seconds += answered_calls * aht
             agent_total_capacity_seconds += interval_agents * 900.0
@@ -77,7 +75,7 @@ def evaluate_operational_performance(forecast_df, scheduled_agents_by_interval, 
             total_handled += (vol - abandoned_calls)
             total_answered_wait += (vol - abandoned_calls) * 450.0
 
-    # [FIX 1 Continued] Compute weighted SLA instead of terminal-interval SLA
+    # Compute weighted SLA instead of terminal-interval SLA
     avg_sla = (total_sl_calls / max(total_handled, 1)) * 100.0 
     avg_asa = total_answered_wait / max(total_handled, 1)
     overall_abandon_rate = (total_abandoned / max(total_calls, 1)) * 100.0
@@ -85,9 +83,7 @@ def evaluate_operational_performance(forecast_df, scheduled_agents_by_interval, 
     
     return avg_sla, avg_asa, overall_abandon_rate, overall_occupancy
 
-# ==========================================
 # 2. SHARED AI PREDICTION LAYER (FULL SET)
-# ==========================================
 def run_ai_prediction_layer(df_log, df_agents):
     print("\n[1] Running Shared AI Prediction Layer (Full Test Set)...")
     time_col = [c for c in ['Timestamp', 'Arrival_Timestamp'] if c in df_log.columns][0]
@@ -127,14 +123,12 @@ def run_ai_prediction_layer(df_log, df_agents):
     
     elite_agents = df_agents.head(min(agents_needed, len(df_agents))).reset_index(drop=True)
     
-    print(f"    -> Forecast Horizon: {days_in_test:.1f} Days")
-    print(f"    -> Total Volume Predicted: {int(future_forecast['Predicted_Volume'].sum())} calls")
-    print(f"    -> Scaled Roster Capacity: Provided {len(elite_agents)} agents for full multi-day coverage.")
+    print(f"Forecast Horizon: {days_in_test:.1f} Days")
+    print(f" Total Volume Predicted: {int(future_forecast['Predicted_Volume'].sum())} calls")
+    print(f"Scaled Roster Capacity: Provided {len(elite_agents)} agents for full multi-day coverage.")
     return future_forecast, elite_agents
 
-# ==========================================
 # 3. MULTI-DAY SOLVERS
-# ==========================================
 def run_classical_baseline(df_forecast, df_agents, shifts):
     print("\n[2] Executing Classical Linear Programming (PuLP) on Full Horizon...")
     start_time = time.time()
@@ -251,14 +245,8 @@ def run_quantum_qubo(df_forecast, df_agents, shifts):
     sla, asa, abandon, occupancy = evaluate_operational_performance(df_forecast, interval_counts)
     return duration, assigned, off_pref, cost, sla, asa, abandon, occupancy
 
-# ==========================================
 # MASTER BENCHMARK EXECUTION
-# ==========================================
-if __name__ == "__main__":
-    print("============================================================")
-    print(" 🚀 VANGUARD: FULL HORIZON ENTERPRISE SCORECARD")
-    print("============================================================")
-    
+if __name__ == "__main__":    
     try:
         df_log = pd.read_csv("call_log.csv")
         df_agents = pd.read_csv("agent_data.csv")
@@ -280,9 +268,7 @@ if __name__ == "__main__":
     c_time, c_assign, c_off, c_cost, c_sla, c_asa, c_aband, c_occ = run_classical_baseline(df_forecast, elite_agents, shifts)
     q_time, q_assign, q_off, q_cost, q_sla, q_asa, q_aband, q_occ = run_quantum_qubo(df_forecast, elite_agents, shifts)
     
-    print("\n============================================================")
-    print(" 📊 ULTIMATE HEAD-TO-HEAD ENTERPRISE SCORECARD")
-    print("============================================================")
+    print(" ULTIMATE HEAD-TO-HEAD ENTERPRISE SCORECARD")
     print(f"{'Operational Metric':<25} | {'Classical (PuLP)':<18} | {'Hybrid Quantum':<18}")
     print("-" * 68)
     print(f"{'Execution Time (sec)':<25} | {c_time:>18.4f} | {q_time:>18.4f}")
@@ -293,4 +279,3 @@ if __name__ == "__main__":
     print(f"{'Avg Speed of Answer':<25} | {c_asa:>15.1f}s | {q_asa:>15.1f}s")
     print(f"{'Queue Abandonment Rate':<25} | {c_aband:>17.2f}% | {q_aband:>17.2f}%")
     print(f"{'Agent Occupancy Rate':<25} | {c_occ:>17.1f}% | {q_occ:>17.1f}%")
-    print("============================================================")
