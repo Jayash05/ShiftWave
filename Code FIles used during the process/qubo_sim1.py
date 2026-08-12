@@ -3,15 +3,10 @@ import numpy as np
 import math
 from itertools import combinations
 from datetime import datetime
+from neal import SimulatedAnnealingSampler
 
-try:
-    from neal import SimulatedAnnealingSampler
-except ImportError:
-    SimulatedAnnealingSampler = None
 
-# ==========================================
 # 1. ERLANG C CALCULATION
-# ==========================================
 def erlang_c(A, N):
     if N <= A: return 1.0 
     inv_b = 1.0
@@ -31,13 +26,11 @@ def calculate_required_agents(volume, aht, target_sl=0.80, target_time=20, inter
         if sl >= target_sl: return N
         N += 1
 
-# ==========================================
-# 2. SPECIALIZED DATA INGESTION
-# ==========================================
+# 2. DATA INGESTION
 def load_specialized_queue(events_file, agents_file, target_date, target_queue):
     print(f"\n[1] Loading Event Log for {target_date} | Target Queue: {target_queue}...")
     
-    # Load Events
+    # Data Prep
     df_events = pd.read_csv(events_file)
     df_events['Arrival_Timestamp'] = pd.to_datetime(df_events['Arrival_Timestamp'])
     
@@ -48,7 +41,6 @@ def load_specialized_queue(events_file, agents_file, target_date, target_queue):
            
     human_calls = df_events[mask].copy()
     
-    # --- ADDED SAFETY CHECK & FALLBACK ---
     if len(human_calls) == 0:
         print(f"    [!] WARNING: 0 Human calls found for {target_queue} on {target_date}.")
         fallback_queue = 'General_Support'
@@ -63,52 +55,8 @@ def load_specialized_queue(events_file, agents_file, target_date, target_queue):
         if len(human_calls) == 0:
              print("    [!] ERROR: Still 0 calls found. Please check your CSV dates and queue names.")
              return None, None, target_queue
-    # ---------------------------------------
 
-    print(f"    -> AI Deflection applied. Remaining Human Calls: {len(human_calls)}")
-
-    # Aggregate into 15-min intervals
-    human_calls.set_index('Arrival_Timestamp', inplace=True)
-    interval_stats = human_calls.resample('15Min').agg(
-        Volume=('Call_ID', 'count'),
-        AHT=('Handle_Time_Seconds', 'mean')
-    ).fillna(0)
-    
-    # Use a lambda that returns a single integer value
-    interval_stats['Target_Headcount'] = interval_stats.apply(
-        lambda row: int(calculate_required_agents(row['Volume'], row['AHT'])), axis=1
-    )
-    
-    max_needed = interval_stats['Target_Headcount'].max()
-    print(f"    -> Erlang C Peak Headcount Required: {max_needed} Agents.")
-    
-    print("\n[2] Loading and Filtering Agent Roster...")
-    df_agents = pd.read_csv(agents_file)
-    
-    # FILTER 2: Elite Agents Only
-    skill_col = f"Skill_{target_queue.replace('_Support', '').replace('_Svc', '')}"
-    if skill_col not in df_agents.columns:
-        # Fallback if the skill column name doesn't perfectly match
-        skill_cols = [c for c in df_agents.columns if c.startswith('Skill_')]
-        if skill_cols:
-             skill_col = skill_cols[0]
-             print(f"    [!] Could not find specific skill column. Using fallback: {skill_col}")
-
-    # Find agents with the skill
-    skilled_agents = df_agents[df_agents[skill_col] == 1].copy()
-    
-    # Sort by Contract Type (Full-Time first) and then by Tenure (Highest first)
-    skilled_agents['Is_FT'] = (skilled_agents['Contract_Type'] == 'Full-Time').astype(int)
-    elite_agents = skilled_agents.sort_values(
-        by=['Is_FT', 'Tenure_AHT_Multiplier'], 
-        ascending=[False, False]
-    ).head(int(max_needed * 1.5)) # Buffer pool
-    
-    print(f"    -> Selected {len(elite_agents)} Elite/Tenured Agents with {target_queue} skills.")
-    
-    return interval_stats, elite_agents, target_queue
-
-
+    print(f" AI Deflection applied. Remaining Human Calls: {len(human_calls)}")
     # Aggregate into 15-min intervals (No artificial 5% scaling needed for specialized queues)
     human_calls.set_index('Arrival_Timestamp', inplace=True)
     interval_stats = human_calls.resample('15Min').agg(
@@ -126,8 +74,7 @@ def load_specialized_queue(events_file, agents_file, target_date, target_queue):
     print("\n[2] Loading and Filtering Agent Roster...")
     df_agents = pd.read_csv(agents_file)
     
-    # FILTER 2: Elite Agents Only (Must have the specific skill, prefer Full-Time, high tenure)
-    # We grab slightly more agents than the peak required to give the solver flexibility
+    # We can grab slightly more agents than the peak required to give the solver flexibility
     skill_col = f"Skill_{target_queue.replace('_Support', '').replace('_Svc', '')}"
     
     # Find agents with the skill
@@ -140,13 +87,12 @@ def load_specialized_queue(events_file, agents_file, target_date, target_queue):
         ascending=[False, False]
     ).head(int(max_needed * 1.5)) # Buffer pool
     
-    print(f"    -> Selected {len(elite_agents)} Elite/Tenured Agents with {target_queue} skills.")
+    print(f"Selected {len(elite_agents)} Elite/Tenured Agents with {target_queue} skills.")
     
     return interval_stats, elite_agents
 
-# ==========================================
+
 # 3. QUBO MATRIX GENERATION
-# ==========================================
 def build_qubo(interval_stats, df_agents, target_date_str):
     print(f"\n[3] Building QUBO Matrix for {len(df_agents)} Elite agents...")
     target_day_name = pd.to_datetime(target_date_str).strftime('%A')
@@ -216,9 +162,7 @@ def build_qubo(interval_stats, df_agents, target_date_str):
     print(f"    -> QUBO Matrix successfully built with {len(Q)} active couplings.")
     return Q
 
-# ==========================================
 # 4. SOLVER INTEGRATION
-# ==========================================
 def solve_with_dwave(Q, df_agents, target_queue):
     if SimulatedAnnealingSampler is None:
         print("\n[!] ERROR: 'dwave-neal' is not installed.")
@@ -229,9 +173,7 @@ def solve_with_dwave(Q, df_agents, target_queue):
     response = sampler.sample_qubo(Q, num_reads=100)
     best_sample = response.first.sample
     
-    print("\n" + "="*60)
-    print(f" 🚀 OPTIMIZED SKILL-BASED SCHEDULE: {target_queue.upper()}")
-    print("="*60)
+    print(f" OPTIMIZED SKILL-BASED SCHEDULE: {target_queue.upper()}")
     
     scheduled_shifts = 0
     total_cost = 0.0
@@ -254,8 +196,8 @@ def solve_with_dwave(Q, df_agents, target_queue):
             total_cost += cost
             scheduled_shifts += 1
             
-            pref_flag = " [⚠️ Off-Preference]" if shift_name not in agent_row['Preferred_Shift'] else ""
-            print(f"✅ {agent_id} (Tenure: {agent_row['Tenure_AHT_Multiplier']}) -> {shift_name} | Cost: ${cost:.2f}{pref_flag}")
+            pref_flag = " [ Off-Preference]" if shift_name not in agent_row['Preferred_Shift'] else ""
+            print(f" {agent_id} (Tenure: {agent_row['Tenure_AHT_Multiplier']}) -> {shift_name} | Cost: ${cost:.2f}{pref_flag}")
             
             # Update the scheduled_capacity dictionary
             start_hr = shift_starts[shift_name]
@@ -265,19 +207,15 @@ def solve_with_dwave(Q, df_agents, target_queue):
             
             for i in range(start_interval, end_interval):
                 scheduled_capacity[i] += 1
-                
-    print("-" * 60)
+    
     cloned_agents = sum(1 for counts in agent_counts.values() if counts > 1)
     print(f"Total Elite Agents Assigned: {scheduled_shifts}")
     print(f"Rule Violations (Cloned Agents): {cloned_agents} (Must be 0)")
     print(f"Total Specialized Labor Cost: ${total_cost:.2f}")
-    print("=" * 60)
     
     return scheduled_capacity
 
-# ==========================================
 # 5. DISCRETE EVENT SIMULATION
-# ==========================================
 class VirtualCallCenter:
     def __init__(self, env, initial_agents):
         self.env = env
@@ -356,9 +294,8 @@ def run_simulation(human_calls, scheduled_capacity):
     # Force the simulation to stop at midnight (24 hours * 60 mins * 60 secs = 86400)
     env.run(until=86400) 
     
-    print("\n" + "="*50)
-    print(" 📊 VIRTUAL CALL CENTER: END OF DAY REPORT")
-    print("="*50)
+    print(" VIRTUAL CALL CENTER: END OF DAY REPORT")
+
     
     results = pd.DataFrame(call_center.metrics)
     total_calls = len(results)
@@ -381,10 +318,10 @@ def run_simulation(human_calls, scheduled_capacity):
     print("-" * 50)
     
     if sla_percentage >= 80:
-        print(f"🏆 SERVICE LEVEL AGREEMENT (SLA) MET: {sla_percentage:.1f}%")
+        print(f" SERVICE LEVEL AGREEMENT (SLA) MET: {sla_percentage:.1f}%")
         print("   (Target: 80% answered in 20 seconds)")
     else:
-        print(f"⚠️ SLA FAILED: {sla_percentage:.1f}%")
+        print(f" SLA FAILED: {sla_percentage:.1f}%")
         print("   (Target: 80% answered in 20 seconds)")
     print("="*50)
 
