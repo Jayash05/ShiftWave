@@ -1,8 +1,3 @@
-"""
-Vanguard 4.1: THE HACKATHON WINNER
-Classical vs. Quantum-Inspired Local Simulator (Custom Schema Match)
-"""
-
 import math
 import time
 import pandas as pd
@@ -10,9 +5,7 @@ import pulp
 import dimod
 import neal
 
-# ==========================================
 # 1. QUEUE PHYSICS (ERLANG C)
-# ==========================================
 def erlang_c(A, N):
     if N <= A: return 1.0 
     inv_b = 1.0
@@ -33,9 +26,7 @@ def calculate_erlang_target(hourly_rate, aht, target_sla=0.90, target_asa=10.0):
             return N
         N += 1
 
-# ==========================================
 # 2. EVALUATION ENGINE
-# ==========================================
 def evaluate_schedules(df_forecast_dict, best_sample, df_agents, shifts):
     schedule_counts = {q: {t: 0 for t in range(96)} for q in df_forecast_dict.keys()}
     off_pref = 0
@@ -97,9 +88,7 @@ def evaluate_schedules(df_forecast_dict, best_sample, df_agents, shifts):
     
     return sla_pct, asa, abandon_pct, off_pref
 
-# ==========================================
 # 3. CLASSICAL LP BASELINE (PuLP)
-# ==========================================
 def execute_classical_model(df_forecast_dict, df_agents, shifts, queue_metadata):
     print("\n[CLASSICAL] Executing PuLP Linear Programming...")
     start_time = time.time()
@@ -176,9 +165,9 @@ def execute_classical_model(df_forecast_dict, df_agents, shifts, queue_metadata)
             best_sample[f"x_{a_id}_{s_name}_{q_name}"] = 0
 
     return best_sample, duration, assigned, cost, cross_skill
-# ==========================================
+
 # 4. TRUE QUANTUM SIMULATOR (MACRO-QUBITS)
-# ==========================================
+
 def execute_true_quantum_squads(df_forecast_dict, df_agents, shifts, queue_metadata):
     print("\n[QUANTUM] Clustering Agents into Macro-Qubits (Squads)...")
     start_time = time.time()
@@ -214,7 +203,7 @@ def execute_true_quantum_squads(df_forecast_dict, df_agents, shifts, queue_metad
                 'valid_queues': valid_queues
             })
 
-    print(f"    -> Compressed {len(df_agents)} agents into {len(squads)} manageable Qubits.")
+    print(f"Compressed {len(df_agents)} agents into {len(squads)} manageable Qubits.")
     
     # 2. Build the Constrained Quadratic Model
     print("[QUANTUM] Compiling True Constrained Quadratic Model (CQM)...")
