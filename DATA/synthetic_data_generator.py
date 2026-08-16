@@ -28,7 +28,7 @@ def get_interval_weight(day_of_week, hour):
             return np.exp(-0.5 * ((hour - 12) / 2.0)**2) + 0.1
         return 0.01
 
-def generate_event_driven_wfm_data(start_date_str='2026-08-03'):
+def generate_data(start_date_str='2026-08-03'):
     start_date = datetime.strptime(start_date_str, '%Y-%m-%d')
     days = 7
     
@@ -112,7 +112,7 @@ def generate_event_driven_wfm_data(start_date_str='2026-08-03'):
     df_events = df_events.sort_values(by='Arrival_Timestamp').reset_index(drop=True)
     df_events.to_csv('call_log.csv', index=False)
     
-    # 2. AGENT DETAILS GENERATION (Added Part-Time Contract Types, SHIFT PREFERENCE, UNAVAILABLE DAYS ETC..)
+    # 2. AGENT DETAILS GENERATION (Added Part-Time Contract Types, Shift Preference etc..)
     
     agent_tiers = [
         {'title': 'General',      'w_min': 18.5, 'w_max': 22.0, 'share': 0.50, 'skills': [1,0,0,0]},
@@ -185,7 +185,6 @@ def generate_event_driven_wfm_data(start_date_str='2026-08-03'):
     with open('business_rules.json', 'w') as f:
         json.dump(business_rules, f, indent=4)
         
-    print("Enterprise Dataset Generated Successfully!")
 
 if __name__ == "__main__":
-    generate_event_driven_wfm_data()
+    generate_data()
